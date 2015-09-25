@@ -6,36 +6,30 @@ require 'yahoo-weather'
 
 VALID_DATES = ["today", "tomorrow", "monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"]
 HELP_FLAGS = ["help", "-h", "--help"]
-USAGE = "\nWelcome to Ruby Alarm."\
-        "\nUsage: $ ruby alarm.rb <day> <time> (ex. ruby alarm.rb monday 930am)"\
-        "\nValid <day> options: #{VALID_DATES.join(", ")}"\
-        "\nValid <time> options: hh:mm (ex. 06:15, 8:30, 1030am, 16:30, 9:20pm)\n"
+USAGE = "\nUsage: \n\t$ sudo ruby alarm.rb <day> <time> (ex. sudo ruby alarm.rb monday 930am)"\
+        "\n\nValid <day> options: \n\t#{VALID_DATES.join(", ")}"\
+        "\n\nValid <time> options: \n\thh:mm (ex. 06:15, 8:30, 1030am, 16:30, 9:20pm)\n\n"
 
 
+# Don't send anything to STDOUT on force quit
+trap("SIGINT") { exit! }
+
+# Map a few arbitrary cities to their ID for weather
 location_ids = {"calgary": 8775, "montreal": 3534, "toronto": 4118, "vancouver": 9807}
-
-reaper = Thread.new do
-  loop do
-    Kernel.exit if gets =~ /q/
-  end
-end
+default_city = :calgary
 
 
-if !ARGV.length == 2
+if !([2,3].include? ARGV.length)
   puts USAGE
 elsif HELP_FLAGS.include? ARGV[0].downcase or !VALID_DATES.include? ARGV[0].downcase
   puts USAGE
 else
 
   ## Location
-  if ARGV[3].nil?
-    location = location_ids[:calgary]
+  if ARGV[2].nil? or location_ids[ARGV[2].to_sym].nil?
+    location = location_ids[default_city]
   else
-    begin
-      location = location_ids[ARGV[3].to_sym]
-    rescue
-      location = location_ids[:calgary]
-    end
+    location = location_ids[ARGV[2].to_sym]
   end
 
   ## Time Scheduler
@@ -46,7 +40,7 @@ else
   ## For OS X ensure pmset is scheduled to wake system before alarm rings
   if RUBY_PLATFORM.include? "darwin"
     schedule = "#{ring_time.month}/#{ring_time.day}/#{ring_time.year} #{ring_time.hour}:#{ring_time.min}:00"
-    `pmset schedule wake "#{schedule}"`
+    `sudo pmset schedule wake "#{schedule}"`
   end
 
 
@@ -71,7 +65,7 @@ else
 
       puts `clear`
       puts "\nLocation : #{city}"
-      puts "Temperature : #{temp}"
+      puts "Temperature : #{temp} C"
       puts "Details : #{details}"
       
       puts "\nPress ctrl+C to disable alarm"

@@ -14,7 +14,7 @@ Remaining:  59 s
 Alarm Ringing:
 ```bash
 Location : Calgary
-Temperature : 15
+Temperature : 15 C
 Details : Mostly Cloudy
 
 Press ctrl+C to disable alarm
